@@ -21,6 +21,12 @@ const CLOSE_TOURNAMENT = {
   type: 1,
 };
 
-const ALL_COMMANDS = [CREATE_TOURNAMENT, CLOSE_TOURNAMENT];
+const HELP = {
+  name: "help",
+  description: "Get the list of available commands",
+  type: 1,
+};
+
+const ALL_COMMANDS = [HELP, CREATE_TOURNAMENT, CLOSE_TOURNAMENT];
 
 InstallGlobalCommands(process.env.APP_ID, ALL_COMMANDS);

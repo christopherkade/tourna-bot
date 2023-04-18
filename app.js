@@ -13,6 +13,9 @@ import {
   closeTournament,
   closeSelectedTournament,
 } from "./commands/closeTournament.js";
+import help from "./commands/help.js";
+
+import { AVAILABLE_COMMANDS } from "./constants/availableCommands.js";
 
 // Create an express app
 const app = express();
@@ -21,8 +24,7 @@ const PORT = process.env.PORT || 3000;
 // Parse request body and verifies incoming requests using discord-interactions package
 app.use(express.json({ verify: VerifyDiscordRequest(process.env.PUBLIC_KEY) }));
 
-// Store for in-progress games. In production, you'd want to use a DB
-const activeGames = {};
+// TODO: How should we store active tournaments?
 export const activeTournaments = {};
 
 /**
@@ -50,13 +52,17 @@ app.post("/interactions", async function (req, res) {
 
     console.log("name", name);
 
-    if (name === "tournament") {
+    if (name === AVAILABLE_COMMANDS.TOURNAMENT) {
       createTournament(req, res, id);
     }
 
-    if (name === "close-tournament") {
+    if (name === AVAILABLE_COMMANDS.CLOSE_TOURNAMENT) {
       console.log("Requested tournament deletion...");
       closeTournament(req, res, id);
+    }
+
+    if (name === AVAILABLE_COMMANDS.HELP) {
+      help(res);
     }
   }
 
@@ -67,78 +73,6 @@ app.post("/interactions", async function (req, res) {
     if (componentId.startsWith("close_tournament")) {
       closeSelectedTournament(data, res, req);
     }
-
-    // if (componentId.startsWith("accept_button_")) {
-    //   // get the associated game ID
-    //   const gameId = componentId.replace("accept_button_", "");
-    //   // Delete message with token in request body
-    //   const endpoint = `webhooks/${process.env.APP_ID}/${req.body.token}/messages/${req.body.message.id}`;
-    //   try {
-    //     await res.send({
-    //       type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-    //       data: {
-    //         // Fetches a random emoji to send from a helper function
-    //         content: "What is your object of choice?",
-    //         // Indicates it'll be an ephemeral message
-    //         flags: InteractionResponseFlags.EPHEMERAL,
-    //         components: [
-    //           {
-    //             type: MessageComponentTypes.ACTION_ROW,
-    //             components: [
-    //               {
-    //                 type: MessageComponentTypes.STRING_SELECT,
-    //                 // Append game ID
-    //                 custom_id: `select_choice_${gameId}`,
-    //                 options: getShuffledOptions(),
-    //               },
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     });
-    //     // Delete previous message
-    //     await DiscordRequest(endpoint, { method: "DELETE" });
-    //   } catch (err) {
-    //     console.error("Error sending message:", err);
-    //   }
-    // } else if (componentId.startsWith("select_choice_")) {
-    //   // get the associated game ID
-    //   const gameId = componentId.replace("select_choice_", "");
-
-    //   if (activeGames[gameId]) {
-    //     // Get user ID and object choice for responding user
-    //     const userId = req.body.member.user.id;
-    //     const objectName = data.values[0];
-    //     // Calculate result from helper function
-    //     const resultStr = getResult(activeGames[gameId], {
-    //       id: userId,
-    //       objectName,
-    //     });
-
-    //     // Remove game from storage
-    //     delete activeGames[gameId];
-    //     // Update message with token in request body
-    //     const endpoint = `webhooks/${process.env.APP_ID}/${req.body.token}/messages/${req.body.message.id}`;
-
-    //     try {
-    //       // Send results
-    //       await res.send({
-    //         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-    //         data: { content: resultStr },
-    //       });
-    //       // Update ephemeral message
-    //       await DiscordRequest(endpoint, {
-    //         method: "PATCH",
-    //         body: {
-    //           content: "Nice choice " + getRandomEmoji(),
-    //           components: [],
-    //         },
-    //       });
-    //     } catch (err) {
-    //       console.error("Error sending message:", err);
-    //     }
-    //   }
-    // }
   }
 });
 
